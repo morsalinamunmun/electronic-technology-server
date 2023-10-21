@@ -66,13 +66,13 @@ async function run() {
     })
 
     //post add cart
-    app.post('/cart', async(req, res)=>{
+    app.post('/myCart', async(req, res)=>{
       const result = await cartCollection.insertOne(req.body);
       res.send(result);
     }) 
 
     //get cart
-    app.get('/cart', async(req, res)=>{
+    app.get('/myCart', async(req, res)=>{
       const cursor = cartCollection.find();
       const result = await cursor.toArray();
         res.send(result);
@@ -81,7 +81,8 @@ async function run() {
     //delete 
     app.delete('/cart/:id', async(req, res)=>{
        const id = req.params.id;
-       const query = {_id: new ObjectId(id)}
+       console.log(id)
+       const query = {_id: id}
        const result = await cartCollection.deleteOne(query);
        res.send(result);
     })
