@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port =process.env.PORT || 5000;
 
@@ -30,12 +30,52 @@ async function run() {
 
     const productCollection = client.db('productDB').collection('product')
 
+    app.get('/products', async(req, res)=>{
+        const cursor = productCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+    })
+
+    //get specific product on brand
+    app.get('/products/:name', async(req, res)=>{
+        const name = req.params.name;
+        console.log(name)
+        const query = {name: name};
+        const cursor =  productCollection.find(query);
+        const result = await cursor.toArray();
+        res.send(result);
+    })
+
+    //update- get specific data to id
+    app.get('/product/:id', async(req, res)=>{
+        const id = req.params.id;
+        console.log(id)
+        const query= {_id: new ObjectId(id)};
+        const result = await productCollection.findOne(query);
+        res.send(result);
+    })
+
     app.post('/products', async(req, res)=>{
         const productInfo = req.body;
         console.log(productInfo)
         const result = await productCollection.insertOne(productInfo)
         res.send(result);
     })
+
+    app.put('/brands/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const options = {upset: true};
+      const updateProductInfo = req.body;
+      const updateProduct = {
+        $set: {
+          image_url: updateProductInfo.image_url , name: updateProductInfo.name, product: updateProductInfo.product, rating: updateProductInfo.rating, description: updateProductInfo.description, price: updateProductInfo.price, type: updateProductInfo.type
+        }
+      }
+      const result = await productCollection.updateOne(query, updateProduct, options);
+      res.send(result);
+    })
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
